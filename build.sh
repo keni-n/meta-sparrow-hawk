@@ -10,6 +10,7 @@ export WORK=`pwd`
 TARGET_IMAGE=core-image-minimal
 USE_SSTATE_MIRROR=no
 BUILD_SBOM=no
+BUILD_ROOTFS_ONLY=no
 REMOVE_WORKDIR=no
 IS_BUILD_INSIDE_REPO=yes
 IS_BUILD_SDK=no
@@ -46,6 +47,8 @@ for arg in $@; do
         REMOVE_WORKDIR=yes
     elif [[ "$arg" == "--sstate-mirror" ]]; then
         USE_SSTATE_MIRROR=yes
+    elif [[ "$arg" == "--build-rootfs-only" ]]; then
+        BUILD_ROOTFS_ONLY=yes
     fi
 done
 
@@ -107,6 +110,13 @@ else # Disable SBOM build to reduce build time
 cat << EOS >> conf/local.conf
 # Disable create-spdx
 INHERIT:remove = "create-spdx"
+EOS
+fi
+
+if [[ "${BUILD_ROOTFS_ONLY}" == "yes" ]]; then
+cat << EOS >> conf/local.conf
+# Disable kernel building
+PREFERRED_PROVIDER_virtual/kernel = "linux-dummy"
 EOS
 fi
 
