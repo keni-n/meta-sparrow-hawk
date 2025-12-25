@@ -20,8 +20,9 @@ QOS_USER_PKGS:aarch64-poky-linux = " \
     qosif-tp-user-module \
 "
 
+OVERRIDES .= ":kernel-${PREFERRED_PROVIDER_virtual/kernel}"
 # Installation for QoS packages
-IMAGE_INSTALL:append = " \
+IMAGE_INSTALL:append:kernel-linux-renesas = " \
     kernel-module-qos \
     ${QOS_USER_PKGS} \
 "
