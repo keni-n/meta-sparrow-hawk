@@ -2,8 +2,10 @@ DESCRIPTION = "Initramfs image to load PCIe module at early timing"
 LICENSE = "MIT"
 inherit core-image
 
+OVERRIDES .= ":kernel-${PREFERRED_PROVIDER_virtual/kernel}"
 IMAGE_FEATURES = ""
-IMAGE_INSTALL = "kernel-module-pcie-rcar-gen4 sparrow-hawk-fw busybox"
+IMAGE_INSTALL = "sparrow-hawk-fw busybox"
+IMAGE_INSTALL:append:kernel-linux-renesas = " kernel-module-pcie-rcar-gen4"
 IMAGE_INSTALL:remove = "snort"
 IMAGE_INSTALL:remove = "smcroute"
 IMAGE_INSTALL:remove = "iperf3"
