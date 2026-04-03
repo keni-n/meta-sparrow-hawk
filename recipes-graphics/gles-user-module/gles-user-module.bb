@@ -108,6 +108,8 @@ FILES:libgles2-${PN}-dev = " \
 FILES:libgles3-${PN}-dev = " \
     ${includedir}/GLES3 \
 "
+FILES:libopencl-${PN} = "${libdir}/libOpenCL.so.*"
+FILES:libopencl-${PN}-dev = "${libdir}/libOpenCL.so"
 
 PROVIDES = "virtual/gles-user-module virtual/egl virtual/libgles2"
 
