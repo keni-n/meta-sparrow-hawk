@@ -29,11 +29,8 @@ do_compile[noexec] = "1"
 do_install() {
     # Install configuration files
     install -d ${D}${sysconfdir}/init.d
-    install -m 644 ${S}/etc/powervr.ini ${D}${sysconfdir}
+    cp -r ${S}/etc/* ${D}${sysconfdir}/
     install -m 755 ${S}/etc/init.d/rc.pvr ${D}${sysconfdir}/init.d/pvrinit
-    install -m 755 ${S}/etc/init.d/rc.pvr ${D}${sysconfdir}/init.d/
-    install -d ${D}${sysconfdir}/udev/rules.d
-    install -m 644 ${S}/etc/udev/rules.d/72-pvr-seat.rules ${D}${sysconfdir}/udev/rules.d/
 
     # Install header files
     install -d ${D}${includedir}/
