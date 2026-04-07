@@ -68,6 +68,8 @@ PACKAGES = "\
     ${PN}-dev \
     libegl-${PN}-dev \
     libgles2-${PN}-dev \
+    libopencl-${PN} \
+    libopencl-${PN}-dev \
 "
 
 FILES:${PN} = " \
