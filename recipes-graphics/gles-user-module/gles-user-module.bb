@@ -32,9 +32,10 @@ do_install() {
     cp -r ${S}/etc/* ${D}${sysconfdir}/
     install -m 755 ${S}/etc/init.d/rc.pvr ${D}${sysconfdir}/init.d/pvrinit
 
-    # Install header files
+    # Install header files except OpenCL standard header
     install -d ${D}${includedir}/
     cp -r ${S}/usr/include/* ${D}${includedir}/
+    rm -rf ${D}${includedir}/CL
 
     # Install pre-builded binaries
     install -d ${D}${libdir}
