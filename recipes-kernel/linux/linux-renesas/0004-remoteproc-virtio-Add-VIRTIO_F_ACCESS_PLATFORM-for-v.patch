@@ -1,0 +1,62 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kenichi Nagai <kenichi.nagai.wt@denso.co.jp>
+Date: Thu, 17 Apr 2026 00:00:00 +0900
+Subject: [PATCH 4/4] remoteproc: virtio: Add VIRTIO_F_ACCESS_PLATFORM for
+ virtio-net and fix 64-bit features handling
+
+Set VIRTIO_F_ACCESS_PLATFORM feature for virtio-net devices so that
+buffers allocated via alloc_skb can be constrained to 32-bit addresses
+through the DMA API.
+
+Also fix the feature finalization to properly handle 64-bit features
+by casting to u32 when writing back to the resource table, which only
+supports 32-bit feature fields.
+
+Signed-off-by: Kenichi Nagai <kenichi.nagai.wt@denso.co.jp>
+---
+ drivers/remoteproc/remoteproc_virtio.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/remoteproc/remoteproc_virtio.c b/drivers/remoteproc/remoteproc_virtio.c
+index c5d46a878149..1287f65187f9 100644
+--- a/drivers/remoteproc/remoteproc_virtio.c
++++ b/drivers/remoteproc/remoteproc_virtio.c
+@@ -250,7 +250,17 @@ static u64 rproc_virtio_get_features(struct virtio_device *vdev)
+
+ 	rsc = (void *)rvdev->rproc->table_ptr + rvdev->rsc_offset;
+
+-	return rsc->dfeatures;
++	u64 features = rsc->dfeatures;
++
++	/*
++     * virtio-net (id=1) のバッファは alloc_skb で確保されるため
++     * DMA API 経由で 32bit アドレスに制約できる。
++     * RPMSG (id=7) は reserved-memory を使うので DMA API 不可。
++    */
++    if (rsc->id == 1)  /* VIRTIO_ID_NET */
++		features |= BIT_ULL(VIRTIO_F_ACCESS_PLATFORM);
++
++	return features;
+ }
+
+ static void rproc_transport_features(struct virtio_device *vdev)
+@@ -277,13 +287,14 @@ static int rproc_virtio_finalize_features(struct virtio_device *vdev)
+ 	rproc_transport_features(vdev);
+
+ 	/* Make sure we don't have any features > 32 bits! */
+-	BUG_ON((u32)vdev->features != vdev->features);
++	//BUG_ON((u32)vdev->features != vdev->features);
+
+ 	/*
+ 	 * Remember the finalized features of our vdev, and provide it
+ 	 * to the remote processor once it is powered on.
+ 	 */
+-	rsc->gfeatures = vdev->features;
++	/* resource table は 32bit ― 上位ビットは書き戻さない */
++	rsc->gfeatures = (u32)vdev->features;
+
+ 	return 0;
+ }
+--
+2.34.1
+

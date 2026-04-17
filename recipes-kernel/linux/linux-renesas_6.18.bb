@@ -24,6 +24,8 @@ SRC_URI:append:sparrow-hawk = " \
     file://sparrow_hawk.cfg \
     file://0001-arm64-dts-renesas-sparrow-hawk-Enable-I2C3-I2C4.patch \
     file://0002-HACK-drivers-gpu-drm-drm_file-Ingnore-flag-checking.patch \
+    file://0003-arm64-dts-renesas-Add-CR52-remoteproc-and-MFIS-suppo.patch \
+    file://0004-remoteproc-virtio-Add-VIRTIO_F_ACCESS_PLATFORM-for-v.patch \
 "
 KERNEL_DEVICETREE:append:sparrow-hawk = " \
     renesas/r8a779g3-sparrow-hawk-camera-j1-imx219.dtbo \

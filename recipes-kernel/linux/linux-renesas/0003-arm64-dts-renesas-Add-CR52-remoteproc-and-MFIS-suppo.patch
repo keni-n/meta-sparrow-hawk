@@ -1,0 +1,137 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kenichi Nagai <kenichi.nagai.wt@denso.co.jp>
+Date: Thu, 17 Apr 2026 00:00:00 +0900
+Subject: [PATCH 3/4] arm64: dts: renesas: Add CR52 remoteproc and MFIS
+ support for sparrow-hawk
+
+Add device tree nodes for:
+- MFIS fixed clock, IPCC mailbox, and register block in r8a779g0.dtsi
+- CR52 remote processor base definition in r8a779g0.dtsi
+- Reserved memory regions for CR52 in r8a779g3-sparrow-hawk.dts
+- CR52 remoteproc enablement in r8a779g3-sparrow-hawk.dts
+
+Signed-off-by: Kenichi Nagai <kenichi.nagai.wt@denso.co.jp>
+---
+ arch/arm64/boot/dts/renesas/r8a779g0.dtsi          | 38 +++++++++++++++++++
+ .../boot/dts/renesas/r8a779g3-sparrow-hawk.dts     | 44 ++++++++++++++++++++++
+ 2 files changed, 82 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/renesas/r8a779g0.dtsi b/arch/arm64/boot/dts/renesas/r8a779g0.dtsi
+index 2383f5508640..98876d830b0d 100644
+--- a/arch/arm64/boot/dts/renesas/r8a779g0.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a779g0.dtsi
+@@ -223,6 +223,43 @@ soc: soc {
+ 		#size-cells = <2>;
+ 		ranges;
+
++		/* MFIS 固定クロック */
++		mfis_clk: fixed-clock {
++		    compatible = "fixed-clock";
++		    #clock-cells = <1>;
++		    clock-frequency = <1000000>;
++		    clock-output-names = "mfis";
++		};
++
++		/* CR52 リモートプロセッサ (ベース定義) */
++		cr52_rproc: cr52@e2100000 {
++		    compatible = "renesas,rcar-cr52";
++		    power-domains = <&sysc R8A779G0_PD_ALWAYS_ON>;
++		    resets = <&cpg 222>;
++		    status = "disabled";
++		};
++
++		/* MFIS IPCC メールボックス */
++		mfis: mailbox@e6260000 {
++		    compatible = "renesas,rcar-gen4-ipcc";
++		    #mbox-cells = <1>;
++		    #address-cells = <1>;
++		    #size-cells = <0>;
++		    reg = <0 0xe6260000 0 0xB000>;
++		    interrupts =
++		        <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
++		        <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
++		    interrupt-names = "rx", "tx";
++		    clocks = <&mfis_clk 0>;
++		    power-domains = <&sysc R8A779G0_PD_ALWAYS_ON>;
++		};
++
++		/* MFIS レジスタブロック (リソーステーブルアドレス読み出し用) */
++		mfisarembr: mfisarembr@e6269460 {
++		    compatible = "simple-bus", "syscon", "simple-mfd";
++		    reg = <0 0xe6269460 0 0x20>;
++		};
++
+ 		rwdt: watchdog@e6020000 {
+ 			compatible = "renesas,r8a779g0-wdt",
+ 				     "renesas,rcar-gen4-wdt";
+@@ -2618,4 +2655,5 @@ timer {
+ 		interrupt-names = "sec-phys", "phys", "virt", "hyp-phys",
+ 				  "hyp-virt";
+ 	};
++
+ };
+diff --git a/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts b/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts
+index 2b598208d6e6..a00dd61105c7 100644
+--- a/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts
++++ b/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts
+@@ -129,6 +129,38 @@ tfa@40000000 {
+ 		};
+ 	};
+
++	/* 予約メモリ領域 */
++	reserved-memory {
++	    #address-cells = <2>;
++	    #size-cells = <2>;
++	    ranges;
++
++	    cr52_ram: cr52_ram@40000000 {
++	        no-map;
++	        reg = <0x0 0x40000000 0x0 0x2000000>;
++	    };
++	    vdev0vring0: vdev0vring0@42000000 {
++	        no-map;
++	        reg = <0x0 0x42000000 0x0 0x1000>;
++	    };
++	    vdev0vring1: vdev0vring1@42001000 {
++	        no-map;
++	        reg = <0x0 0x42001000 0x0 0x1000>;
++	    };
++	    vdev0buffer: vdev0buffer@42002000 {
++	        no-map;
++	        reg = <0x0 0x42002000 0x0 0x4000>;
++	    };
++		cr52_ram2: cr52_ram2@42006000 {
++	        no-map;
++	        reg = <0x0 0x42006000 0x0 0xa000>;
++		};
++	    rtvram: rtvram@e2100000 {
++	        no-map;
++	        reg = <0x0 0xe2100000 0x0 0x200000>;
++	    };
++	};
++
+ 	/* Page 27 / DSI to Display */
+ 	dp-con {
+ 		compatible = "dp-connector";
+@@ -201,6 +233,18 @@ vcc_sdhi: regulator-vcc-sdhi {
+ 	};
+ };
+
++/* CR52 有効化 */
++&cr52_rproc {
++    memory-region = <&cr52_ram>,
++                    <&vdev0vring0>,
++                    <&vdev0vring1>,
++                    <&vdev0buffer>;
++    mboxes      = <&mfis 0>, <&mfis 1>;
++    mbox-names  = "rx", "tx";
++    rcar,syscfg-rsc-tbl = <&mfisarembr 0x0 0xFFFFFFFF>;
++    status = "okay";
++};
++
+ /* Use thermal-idle cooling for all SoC cores */
+ &a76_0 {
+ 	#cooling-cells = <2>;
+--
+2.34.1
+
