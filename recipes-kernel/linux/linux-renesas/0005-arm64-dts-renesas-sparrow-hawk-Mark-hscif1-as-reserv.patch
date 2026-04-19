@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kenichi Nagai <kenichi.nagai.wt@denso.co.jp>
+Date: Mon, 20 Apr 2026 00:00:00 +0900
+Subject: [PATCH 5/5] arm64: dts: renesas: sparrow-hawk: Mark hscif1 as
+ reserved for CR52
+
+HSCIF1 is initialized and used by the CR52 realtime core, so Linux must
+not touch it. Simply setting status = "disabled" is not enough: because
+no Linux driver holds a reference to its MSTP clock, clk_disable_unused()
+gates the clock at late boot, which also puts the module into reset via
+SRCR5 bit 15.
+
+Set status = "reserved" instead. The renesas-cpg-mssr driver recognizes
+this value and adds CLK_IGNORE_UNUSED to the associated CPG_MOD clock,
+preventing clk_disable_unused() from disabling it while still keeping
+the device hidden from Linux drivers.
+
+Signed-off-by: Kenichi Nagai <kenichi.nagai.wt@denso.co.jp>
+---
+ arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts b/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts
+index a00dd61105c7..61af632158ff 100644
+--- a/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts
++++ b/arch/arm64/boot/dts/renesas/r8a779g3-sparrow-hawk.dts
+@@ -396,7 +396,7 @@ &hscif1 {	/* FTDI BDBUS[3:0] */
+ 	pinctrl-names = "default";
+ 	uart-has-rtscts;
+
+-	status = "okay";
++	status = "reserved";
+ };
+
+ /* Page 24 / UART */
+--
+2.34.1
+
