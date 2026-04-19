@@ -79,13 +79,13 @@ if [[ "${IS_BUILD_INSIDE_REPO}" == "yes" ]]; then
     rm -f meta-sparrow-hawk
     ln -sfd ${SCRIPT_DIR} meta-sparrow-hawk
 else
-    git clone https://github.com/rcar-community/meta-sparrow-hawk.git
+    git clone https://github.com/keni-n/meta-sparrow-hawk.git
 fi
 
 git -C poky checkout -B scarthgap da5493bf86b3e75bbae4c5789fdfaca67b6f6a65
 git -C meta-openembedded checkout -B scarthgap 06f846a325fde423bb0a6d49d771d8c1e144d7eb
 if [[ "${IS_BUILD_INSIDE_REPO}" == "no" ]]; then
-    git -C meta-sparrow-hawk checkout -B scarthgap v2026-04-13
+    git -C meta-sparrow-hawk checkout -B scarthgap a831b1706ff721e55b1d532966f9191501031a07
 fi
 
 cd $WORK
