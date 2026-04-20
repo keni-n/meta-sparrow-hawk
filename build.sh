@@ -85,7 +85,7 @@ fi
 git -C poky checkout -B scarthgap da5493bf86b3e75bbae4c5789fdfaca67b6f6a65
 git -C meta-openembedded checkout -B scarthgap 06f846a325fde423bb0a6d49d771d8c1e144d7eb
 if [[ "${IS_BUILD_INSIDE_REPO}" == "no" ]]; then
-    git -C meta-sparrow-hawk checkout -B scarthgap a831b1706ff721e55b1d532966f9191501031a07
+    git -C meta-sparrow-hawk checkout -B scarthgap cfe4e532b5776cb29bd1898bad92914626cb6c19
 fi
 
 cd $WORK
